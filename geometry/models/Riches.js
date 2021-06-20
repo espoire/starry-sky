@@ -1,4 +1,4 @@
-import BevelledRegularPolygon from "./BevelledRegularPolygon.js";
+import BevelledRegularPolygon from "../BevelledRegularPolygon.js";
 
 export default class Riches {
     /**

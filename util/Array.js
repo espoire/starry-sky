@@ -114,3 +114,22 @@ export function compactSparseArray(array) {
         return x != null;
     });
 }
+
+/** Unpacks an arbitrarily-nested collection of arrays
+ * within arrays into a simple one-dimensional array.
+ * 
+ * @param {any | any[]} maybeArray
+ * @returns {any[]}
+ */
+export function unroll(maybeArray) {
+    if(! Array.isArray(maybeArray)) return [maybeArray];
+
+    const array = maybeArray;
+    const ret = [];
+
+    for(const element of array)
+        for(const subelement of unroll(element))
+            ret.push(subelement);
+    
+    return ret;
+}

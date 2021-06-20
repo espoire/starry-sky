@@ -1,7 +1,12 @@
 export default class Graphics {
-    static getScene() {
+    /**
+     * @param {string} backgroundColor
+     *      A THREE.js color string, like "#F08".
+     * @returns {THREE.Scene}
+     */
+    static getScene(backgroundColor) {
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color('#113');
+        scene.background = new THREE.Color(backgroundColor);
         scene.addAll(this.getLights());
 
         return scene;
@@ -10,8 +15,8 @@ export default class Graphics {
     static getCamera() {
         const fov = 45;
         const aspect = window.innerWidth / window.innerHeight;
-        const near = 1;
-        const far = 100;
+        const near = 20;
+        const far = 5020;
         const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
         camera.position.set(0, 0, 20);
         camera.lookAt(0, 0, 0);
@@ -20,7 +25,10 @@ export default class Graphics {
     }
 
     static getRenderer() {
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true
+        });
+
         renderer.setSize( window.innerWidth, window.innerHeight );
         document.body.appendChild( renderer.domElement );
 

@@ -1,12 +1,10 @@
-import Highlighter from "./Highlighter.js";
+import { currentTimeMillis } from "./util/Time.js";
 
 export default class RenderingManager {
     subManagers = [];
 
-    constructor(scene, camera, renderer, mouse) {
+    constructor(scene, camera, renderer) {
         this.camera = camera;
-        this.highlighter = new Highlighter();
-        this.mouse = mouse;
         this.renderer = renderer;
         this.scene = scene;
     }
@@ -18,28 +16,39 @@ export default class RenderingManager {
      */
     addSubmanager(sub) {
         this.subManagers.push(sub);
-        sub.setRenderingManager(this);
+
+        if(sub.setRenderingManager)
+            sub.setRenderingManager(this);
     }
 
-    update() {
-        for(const sub of this.subManagers) sub.update();
+    /**
+     * @param {number} delta 
+     *      The time elapsed since the last update in milliseconds.
+     */
+    update(delta) {
+        for(const sub of this.subManagers)
+            sub.update(delta);
     }
 
     display() {
         const renderManager = this;
 
         const camera = this.camera;
-        const highlighter = this.highlighter;
-        const mouse = this.mouse;
         const renderer = this.renderer;
         const scene = this.scene;
+        
+        let lastTime = currentTimeMillis();
 
         function renderLoop() {
+            const time = currentTimeMillis();
+            const delta = time - lastTime;
+
             requestAnimationFrame(renderLoop);
 
-            renderManager.update();
-            highlighter.updateHighlight(camera, mouse);
+            renderManager.update(delta);
             renderer.render( scene, camera );
+
+            lastTime = time;
         }
         renderLoop();
     }

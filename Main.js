@@ -1,6 +1,6 @@
 import "./overrides/JsExtensions.js";
 import "./overrides/ThreeExtensions.js";
-import BegemmedInitializer from "./BegemmedInitializer.js";
+import StarrySkyInitializer from "./StarrySkyInitializer.js";
 
-const animationManager = BegemmedInitializer.getGame();
+const animationManager = StarrySkyInitializer.initialize();
 animationManager.display();

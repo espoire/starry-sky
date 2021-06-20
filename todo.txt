@@ -1,6 +1,0 @@
-Animate orb replacement
-Add orb replacement options (regrow)
-Increment running total combo across cascading breaks, rather than resetting it
-Build pre-replacement loop to generate initial boards with no premade matches
-
-Add game board support for unusual board shapes (I.E. disabled cells)
