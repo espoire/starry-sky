@@ -52,6 +52,16 @@ export default class Animate {
         };
     }
 
+    static scale(startScale, endScale) {
+        return {
+            step: function(mesh, _, progress) {
+                const scale = startScale * (1 - progress) + endScale * progress;
+
+                mesh.scale.set(scale, scale, scale);
+            }
+        }
+    }
+
     static removeFromScene(scene) {
         return {
             end: function (mesh) {

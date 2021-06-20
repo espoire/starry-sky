@@ -1,6 +1,7 @@
 import { degreesToRadians } from "../util/Angle.js";
 import { random } from "../util/Util.js";
 import Star from "./Star.js";
+import AnimationManager from "../animations/AnimationManager.js";
 
 const camera = {
     fov: degreesToRadians(45),
@@ -8,22 +9,39 @@ const camera = {
 };
 const starDistance = {
     min: 0,
-    max: 5000
+    max: 3000
 };
-const count = 20000;
+const count = 6000;
 
-export default class Sky {
+export default class Sky extends AnimationManager {
     constructor() {
-        this.stars = generateStars();
+        super();
+        this.stars = this.generateStars();
     }
     
+    generateStars() {
+        const ret = [];
+
+        for(let i = 0; i < count; i++) {
+            const star = generateStar();
+            star.sky = this;
+            ret.push(star);
+        }
+
+        return ret;
+    }
+
     /**
+     * @param {number} time 
+     *      The total time elapsed in seconds.
      * @param {number} delta 
-     *      The time elapsed since the last update in milliseconds.
+     *      The time elapsed since the last update in seconds.
      */
-    update(delta) {
+    update(time, delta) {
         for(const star of this.stars)
-            star.drift();
+            star.update(time, delta);
+        
+        super.update();
     }
 
     setRenderingManager(manager) {
@@ -36,17 +54,6 @@ export default class Sky {
         for(const star of this.stars)
             scene.add(star.mesh);
     }
-}
-
-function generateStars() {
-    const ret = [];
-
-    for(let i = 0; i < count; i++) {
-        const star = generateStar();
-        ret.push(star);
-    }
-
-    return ret;
 }
 
 function generateStar() {

@@ -22,30 +22,32 @@ export default class RenderingManager {
     }
 
     /**
+     * @param {number} time 
+     *      The total time elapsed in seconds.
      * @param {number} delta 
-     *      The time elapsed since the last update in milliseconds.
+     *      The time elapsed since the last update in seconds.
      */
-    update(delta) {
+    update(time, delta) {
         for(const sub of this.subManagers)
-            sub.update(delta);
+            sub.update(time, delta);
     }
 
     display() {
-        const renderManager = this;
+        const self = this;
 
         const camera = this.camera;
         const renderer = this.renderer;
         const scene = this.scene;
         
-        let lastTime = currentTimeMillis();
+        let lastTime = currentTimeMillis() / 1000;
 
         function renderLoop() {
-            const time = currentTimeMillis();
+            const time = currentTimeMillis() / 1000;
             const delta = time - lastTime;
 
             requestAnimationFrame(renderLoop);
 
-            renderManager.update(delta);
+            self.update(time, delta);
             renderer.render( scene, camera );
 
             lastTime = time;

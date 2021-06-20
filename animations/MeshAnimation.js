@@ -10,10 +10,14 @@ export default class MeshAnimation {
      * @param {Animation | Animation[]} config.animations
      */
     constructor(config) {
+        applyDefaultsTo(config);
+
         const time = currentTimeMillis();
 
+        this.duration = config.duration;
         this.startTime = time + config.startDelay;
-        this.endTime = this.startTime + config.duration;
+        this.endTime = this.startTime + this.duration;
+
         this.mesh = config.mesh;
         this.animations = ensureArray(config.animation);
 
@@ -25,14 +29,14 @@ export default class MeshAnimation {
     animate() {
         if(this.isEnded) throw new Error("Called animate() on an ended MeshAnimation.");
 
-        const {time, delta, start, end} = this.getStatus();
+        const {time, delta, progress, start, end} = this.getStatus();
         this.lastUpdated = time;
 
         if(start)
             this.start();
 
         if(this.isStarted)
-            this.step(delta);
+            this.step(delta, progress);
 
         if(end)
             this.end();
@@ -46,10 +50,10 @@ export default class MeshAnimation {
         this.isStarted = true;
     }
 
-    step(delta) {
+    step(delta, progress) {
         for(const animation of this.animations)
             if(animation.step)
-                animation.step(this.mesh, delta);
+                animation.step(this.mesh, delta, progress);
     }
 
     end() {
@@ -66,14 +70,18 @@ export default class MeshAnimation {
     getStatus() {
         const time = currentTimeMillis();
         let deltaMillis;
+        let progress;
         let start = false;
         let end = false;
 
         if (time <= this.startTime) {
             deltaMillis = 0;
+            progress = 0;
 
         } else {
             if(!this.isStarted) start = true;
+
+            progress = (time - this.startTime) / this.duration;
 
             if (this.lastUpdated <= this.startTime) {
                 deltaMillis = time - this.startTime;
@@ -81,6 +89,7 @@ export default class MeshAnimation {
             } else if (this.endTime < time) {
                 if(!this.isEnded) end = true;
                 deltaMillis = this.endTime - this.lastUpdated;
+                progress = 1;
 
             } else {
                 deltaMillis = time - this.lastUpdated;
@@ -90,8 +99,20 @@ export default class MeshAnimation {
         return {
             time: time,
             delta: deltaMillis / 1000,
+            progress: progress,
             start: start,
             end: end
         };
     }
+}
+
+
+const configDefaults = {
+    startDelay: 0
+}
+
+function applyDefaultsTo(config) {
+    for(const key in configDefaults)
+        if(config[key] == undefined)
+            config[key] = configDefaults[key];
 }
