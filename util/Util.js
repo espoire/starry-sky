@@ -11,6 +11,11 @@ export function random(min, max) {
     return Math.random() * (max - min) + min;
 }
 
+export function randomFromArray(array) {
+    const index = randInt(0, array.length - 1);
+    return array[index];
+}
+
 export class Point2D {
     constructor(x, y) {
         if(typeof x !== 'number') throw new Error("Cannot create Point2D with non-number x-coordinate: ", x);

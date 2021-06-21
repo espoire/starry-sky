@@ -1,5 +1,5 @@
 import RegularPolygon from "../geometry/RegularPolygon.js";
-import { random } from "../util/Util.js";
+import { random, randomFromArray } from "../util/Util.js";
 import MeshAnimation from "../animations/MeshAnimation.js";
 import Animate from "../animations/Animate.js";
 
@@ -113,17 +113,21 @@ export default class Star {
 
     wrapX() {
         if(this.x < -this.limit) {
-            this.x += 2 * this.limit;
+            while(this.x < -this.limit)
+                this.x += 2 * this.limit;
         } else if(this.x > this.limit) {
-            this.x -= 2 * this.limit;
+            while(this.x > this.limit)
+                this.x -= 2 * this.limit;
         }
     }
 
     wrapY() {
         if(this.y < -this.limit) {
-            this.y += 2 * this.limit;
+            while(this.y < -this.limit)
+                this.y += 2 * this.limit;
         } else if(this.y > this.limit) {
-            this.y -= 2 * this.limit;
+            while(this.y > this.limit)
+                this.y -= 2 * this.limit;
         }
     }
 
@@ -133,11 +137,22 @@ export default class Star {
         const z =          this.z;
 
         if(x > this.limit || y > this.limit || z < this.starDistanceLimits.min) {
-            this.z = this.starDistanceLimits.max;
+            this.z += this.starDistanceLimits.max - this.starDistanceLimits.min;
             this.limit = this.getLimit();
 
             this.x = random(-this.limit, this.limit);
             this.y = random(-this.limit, this.limit);
+        } else if(z > this.starDistanceLimits.max) {
+            this.z -= this.starDistanceLimits.max - this.starDistanceLimits.min;
+            this.limit = this.getLimit();
+
+            if(Math.random() < 0.5) {
+                this.x = randomFromArray([-this.limit, this.limit]);
+                this.y = random         ( -this.limit, this.limit );
+            } else {
+                this.x = random         ( -this.limit, this.limit );
+                this.y = randomFromArray([-this.limit, this.limit]);
+            }
         }
     }
 
@@ -149,6 +164,7 @@ export default class Star {
         this.isTwinkling -= delta;
 
         if(this.isTwinkling <= 0) {
+            if(delta > 1) delta = 1;
             const probability = delta / twinkle.secondsPerOcurrence;
 
             if(Math.random() < probability) {
