@@ -9,32 +9,11 @@ const starMaterial = new THREE.MeshBasicMaterial({
     // wireframe: true
 });
 
-const starDrift = {
-    x: 4,
-    y: 0,
-    z: 0
-};
-
-const starWave = {
-    amplitude: {
-        x: 0,
-        y: 10,
-        z: 0
-    },
-
-    period: 15
-}
-
-const twinkle = {
-    secondsPerOcurrence: 2000,
-    scaleMax: 10,
-    durationMillis: 500
-}
-
 export default class Star {
-    constructor(x, y, z, camera, starDistanceLimits) {
+    constructor(x, y, z, camera, starDistanceLimits, twinkleProperties) {
         this.camera = camera;
         this.starDistanceLimits = starDistanceLimits;
+        this.twinkleProperties = twinkleProperties;
 
         this.mesh = generateMesh();
 
@@ -62,39 +41,6 @@ export default class Star {
 
     syncGraphicsToPosition() {
         this.mesh.position.set(this.x, this.y, -this.z);
-    }
-
-    /**
-     * @param {number} time 
-     *      The total time elapsed in seconds.
-     * @param {number} delta 
-     *      The time elapsed since the last update in seconds.
-     */
-    update(time, delta) {
-        this.drift(time, delta);
-        this.twinkle(delta);
-    }
-
-    /**
-     * @param {number} time 
-     *      The total time elapsed in seconds.
-     * @param {number} delta 
-     *      The time elapsed since the last update in seconds.
-     */
-    drift(time, delta) {
-        const prevPhase = Math.sin(2 * Math.PI * (time - delta) / starWave.period)
-        const wavePhase = Math.sin(2 * Math.PI * time / starWave.period);
-        const deltaPhase = wavePhase - prevPhase;
-
-        const waveX = starWave.amplitude.x * deltaPhase;
-        const waveY = starWave.amplitude.y * deltaPhase;
-        const waveZ = starWave.amplitude.z * deltaPhase;
-
-        const deltaX = starDrift.x * delta + waveX;
-        const deltaY = starDrift.y * delta + waveY;
-        const deltaZ = starDrift.z * delta + waveZ;
-
-        this.translate(deltaX, deltaY, deltaZ);
     }
 
     translate(deltaX, deltaY, deltaZ) {
@@ -167,36 +113,31 @@ export default class Star {
     }
 
     /**
-     * @param {number} time 
-     *      The total time elapsed in seconds.
+     * @param {number} probability 
+     *      The probability of starting a twinkle this frame.
      */
-    twinkle(delta) {
+    twinkle(probability, delta) {
         this.isTwinkling -= delta;
 
-        if(this.isTwinkling <= 0) {
-            if(delta > 1) delta = 1;
-            const probability = delta / twinkle.secondsPerOcurrence;
-
-            if(Math.random() < probability) {
+        if(this.isTwinkling <= 0)
+            if(Math.random() < probability)
                 this.beginTwinkle();
-            }
-        }
     }
 
     beginTwinkle() {
         this.sky.addAnimation(new MeshAnimation({
-            duration: twinkle.durationMillis / 2,
+            duration: this.twinkleProperties.durationMillis / 2,
             mesh: this.mesh,
-            animation: Animate.scale(1, twinkle.scaleMax),
+            animation: Animate.scale(1, this.twinkleProperties.scaleMax),
         }));
         this.sky.addAnimation(new MeshAnimation({
-            startDelay: twinkle.durationMillis / 2,
-            duration: twinkle.durationMillis / 2,
+            startDelay: this.twinkleProperties.durationMillis / 2,
+            duration: this.twinkleProperties.durationMillis / 2,
             mesh: this.mesh,
-            animation: Animate.scale(twinkle.scaleMax, 1)
+            animation: Animate.scale(this.twinkleProperties.scaleMax, 1)
         }));
 
-        this.isTwinkling = twinkle.durationMillis / 1000;
+        this.isTwinkling = this.twinkleProperties.durationMillis / 1000;
     }
 }
 

@@ -14,6 +14,28 @@ const starDistance = {
 const maxVolume = getMaxVolume();
 const count = 6000;
 
+const starDrift = {
+    x: 4,
+    y: 0,
+    z: 0
+};
+
+const starWave = {
+    amplitude: {
+        x: 0,
+        y: 10,
+        z: 0
+    },
+
+    period: 15
+}
+
+const twinkle = {
+    secondsPerOcurrence: 2000,
+    scaleMax: 10,
+    durationMillis: 500
+}
+
 export default class Sky extends AnimationManager {
     constructor() {
         super();
@@ -42,8 +64,13 @@ export default class Sky extends AnimationManager {
      *      The time elapsed since the last update in seconds.
      */
     update(time, delta) {
-        for(const star of this.stars)
-            star.update(time, delta);
+        const { deltaX, deltaY, deltaZ } = getStarsTranslationVector(time, delta);
+        const twinkleProbability = (delta > 1 ? 1 : delta) / twinkle.secondsPerOcurrence;
+
+        for(const star of this.stars) {
+            star.translate(deltaX, deltaY, deltaZ);
+            star.twinkle(twinkleProbability, delta);
+        }
         
         super.update();
     }
@@ -60,8 +87,23 @@ export default class Sky extends AnimationManager {
     }
 }
 
-let minZ, maxZ;
+function getStarsTranslationVector(time, delta) {
+    const prevPhase = Math.sin(2 * Math.PI * (time - delta) / starWave.period);
+    const wavePhase = Math.sin(2 * Math.PI * time / starWave.period);
+    const deltaPhase = wavePhase - prevPhase;
 
+    const waveX = starWave.amplitude.x * deltaPhase;
+    const waveY = starWave.amplitude.y * deltaPhase;
+    const waveZ = starWave.amplitude.z * deltaPhase;
+
+    const deltaX = starDrift.x * delta + waveX;
+    const deltaY = starDrift.y * delta + waveY;
+    const deltaZ = starDrift.z * delta + waveZ;
+
+    return { deltaX, deltaY, deltaZ };
+}
+
+let minZ, maxZ;
 function generateStar() {
     const v = random(0, maxVolume);
     const z = getDistanceForVolume(v);
@@ -70,7 +112,7 @@ function generateStar() {
     const x = random(-xyLimit, xyLimit);
     const y = random(-xyLimit, xyLimit);
 
-    const star = new Star(x, y, z, camera, starDistance);
+    const star = new Star(x, y, z, camera, starDistance, twinkle);
 
     if(minZ == null || star.z < minZ) minZ = star.z;
     if(maxZ == null || star.z > maxZ) maxZ = star.z;
