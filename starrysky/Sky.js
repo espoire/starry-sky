@@ -8,7 +8,7 @@ const camera = {
     distance: 20
 };
 const starDistance = {
-    min: 0,
+    min: 100,
     max: 2000
 };
 const maxVolume = getMaxVolume();
@@ -28,6 +28,9 @@ export default class Sky extends AnimationManager {
             star.sky = this;
             ret.push(star);
         }
+
+        console.log("Generated " + count + " stars, at z-depths [" +
+            Math.floor(minZ) + " .. " + Math.floor(maxZ) + "].");
 
         return ret;
     }
@@ -57,6 +60,8 @@ export default class Sky extends AnimationManager {
     }
 }
 
+let minZ, maxZ;
+
 function generateStar() {
     const v = random(0, maxVolume);
     const z = getDistanceForVolume(v);
@@ -65,7 +70,12 @@ function generateStar() {
     const x = random(-xyLimit, xyLimit);
     const y = random(-xyLimit, xyLimit);
 
-    return new Star(x, y, z, camera, starDistance);
+    const star = new Star(x, y, z, camera, starDistance);
+
+    if(minZ == null || star.z < minZ) minZ = star.z;
+    if(maxZ == null || star.z > maxZ) maxZ = star.z;
+
+    return star;
 }
 
 function getMaxVolume() {
@@ -91,5 +101,5 @@ function getDistanceForVolume(v) {
     // t = "trueDistanceToNearPlane"
     const t = camera.distance + starDistance.min;
 
-    return Math.cbrt(3 * v + Math.pow(t, 3)) - t;
+    return Math.cbrt(3 * v + Math.pow(t, 3)) - t + starDistance.min;
 }

@@ -98,15 +98,21 @@ export default class Star {
     }
 
     translate(deltaX, deltaY, deltaZ) {
-        this.z += deltaZ;
-        this.limit = this.getLimit();
-        this.wrapZ();
+        if(deltaZ != 0) {
+            this.z += deltaZ;
+            this.limit = this.getLimit();
+            this.wrapZ();
+        }
 
-        this.x += deltaX;
-        this.y += deltaY;
+        if(deltaX != 0) {
+            this.x += deltaX;
+            this.wrapX();
+        }
 
-        this.wrapX();
-        this.wrapY();
+        if(deltaY != 0) {
+            this.y += deltaY;
+            this.wrapY();
+        }
 
         this.syncGraphicsToPosition();
     }
@@ -137,6 +143,10 @@ export default class Star {
         const z =          this.z;
 
         if(x > this.limit || y > this.limit || z < this.starDistanceLimits.min) {
+            // Note: this code doesn't work right.
+            // Not fixing now because it's not in use anyway.
+            console.log("Wrapped front to back.");
+
             this.z += this.starDistanceLimits.max - this.starDistanceLimits.min;
             this.limit = this.getLimit();
 
@@ -174,8 +184,6 @@ export default class Star {
     }
 
     beginTwinkle() {
-        console.log("Twinkle");
-
         this.sky.addAnimation(new MeshAnimation({
             duration: twinkle.durationMillis / 2,
             mesh: this.mesh,
