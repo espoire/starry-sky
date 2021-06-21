@@ -15,7 +15,6 @@ export default class StarrySkyInitializer {
         manager.addSubmanager(sky);
 
         const stats = createStats();
-        document.body.appendChild(stats.domElement);
         manager.addSubmanager(stats);
 
         return manager;
@@ -29,6 +28,7 @@ function createStats() {
     stats.domElement.style.position = 'absolute';
     stats.domElement.style.left = '0';
     stats.domElement.style.top = '0';
+    document.body.appendChild(stats.domElement);
 
     return stats;
-  }
+}

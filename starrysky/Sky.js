@@ -4,13 +4,14 @@ import Star from "./Star.js";
 import AnimationManager from "../animations/AnimationManager.js";
 
 const camera = {
-    fov: degreesToRadians(45),
+    fov: degreesToRadians(20),
     distance: 20
 };
 const starDistance = {
     min: 0,
-    max: 3000
+    max: 2000
 };
+const maxVolume = getMaxVolume();
 const count = 6000;
 
 export default class Sky extends AnimationManager {
@@ -57,18 +58,38 @@ export default class Sky extends AnimationManager {
 }
 
 function generateStar() {
-    const maxXY = Math.sin(camera.fov) * (camera.distance + starDistance.max);
+    const v = random(0, maxVolume);
+    const z = getDistanceForVolume(v);
+    
+    const xyLimit = Math.sin(camera.fov) * (camera.distance + z);
+    const x = random(-xyLimit, xyLimit);
+    const y = random(-xyLimit, xyLimit);
 
-    while(true) {
-        const x = random(-maxXY, maxXY);
-        const y = random(-maxXY, maxXY);
-        const z = random(starDistance.min, starDistance.max);
+    return new Star(x, y, z, camera, starDistance);
+}
 
-        const xyLimit = Math.sin(camera.fov) * (camera.distance + z);
+function getMaxVolume() {
+    return getVolumeBetweenNearPlaneAndDistance(starDistance.max);
+}
 
-        if(Math.abs(x) > xyLimit) continue;
-        if(Math.abs(y) > xyLimit) continue;
+function getVolumeBetweenNearPlaneAndDistance(d) {
+    return getVolumeFromCameraForDistance(               d) -
+           getVolumeFromCameraForDistance(starDistance.min);
+}
 
-        return new Star(x, y, z, camera, starDistance);
-    }
+/**
+ * @param {number} d 
+ * @returns {number}
+ */
+function getVolumeFromCameraForDistance(d) {
+    return                       1/3     * Math.pow(d, 3) +
+                     camera.distance     * Math.pow(d, 2) +
+            Math.pow(camera.distance, 2) *          d;
+}
+
+function getDistanceForVolume(v) {
+    // t = "trueDistanceToNearPlane"
+    const t = camera.distance + starDistance.min;
+
+    return Math.cbrt(3 * v + Math.pow(t, 3)) - t;
 }
