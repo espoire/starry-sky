@@ -2,14 +2,13 @@ import RegularPolygon from "../geometry/RegularPolygon.js";
 import { random, randomFromArray } from "../util/Util.js";
 import MeshAnimation from "../animations/MeshAnimation.js";
 import Animate from "../animations/Animate.js";
+import Interpolation from "../math/Interpolation.js";
 
-const starGeometry = RegularPolygon.getGeometry(4, true);
-const starMaterial = new THREE.MeshBasicMaterial({
-    color: '#FFF',
-    // wireframe: true
-});
+const starGeometry = RegularPolygon.getGeometry(4);
+const starMaterial = new THREE.MeshBasicMaterial({ color: '#FFF' });
 
 export default class Star {
+    // TODO convert to config object
     constructor(x, y, z, camera, starDistanceLimits, twinkleProperties) {
         this.camera = camera;
         this.starDistanceLimits = starDistanceLimits;
@@ -18,9 +17,7 @@ export default class Star {
         this.mesh = generateMesh();
 
         this.setPosition(x, y, z);
-        this.limit = this.getLimit();
-
-        this.size = 1;
+        
         this.isTwinkling = 0;
     }
 
@@ -35,6 +32,7 @@ export default class Star {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.limit = this.getLimit();
         
         this.syncGraphicsToPosition();
     }
@@ -48,12 +46,6 @@ export default class Star {
     }
 
     translate(deltaX, deltaY, deltaZ) {
-        if(deltaZ != 0) {
-            this.z += deltaZ;
-            this.limit = this.getLimit();
-            this.wrapZ();
-        }
-
         if(deltaX != 0) {
             this.x += deltaX;
             this.wrapX();
@@ -64,26 +56,28 @@ export default class Star {
             this.wrapY();
         }
 
+        if(deltaZ != 0) {
+            this.z += deltaZ;
+            this.limit = this.getLimit();
+            this.wrapZ();
+        }
+
         this.syncGraphicsToPosition();
     }
 
     wrapX() {
         if(this.x < -this.limit) {
-            while(this.x < -this.limit)
-                this.x += 2 * this.limit;
+            this.x += 2 * this.limit;
         } else if(this.x > this.limit) {
-            while(this.x > this.limit)
-                this.x -= 2 * this.limit;
+            this.x -= 2 * this.limit;
         }
     }
 
     wrapY() {
         if(this.y < -this.limit) {
-            while(this.y < -this.limit)
-                this.y += 2 * this.limit;
+            this.y += 2 * this.limit;
         } else if(this.y > this.limit) {
-            while(this.y > this.limit)
-                this.y -= 2 * this.limit;
+            this.y -= 2 * this.limit;
         }
     }
 
@@ -119,41 +113,71 @@ export default class Star {
     /**
      * @param {number} probability 
      *      The probability of starting a twinkle this frame.
+     * @returns {MeshAnimation[]}
+     *      Any animations to display.
      */
     twinkle(probability, magnitude, delta = 0) {
         this.isTwinkling -= delta;
 
         if(this.isTwinkling <= 0)
             if(Math.random() < probability)
-                this.beginTwinkle(magnitude);
+                return this.beginTwinkle(magnitude);
     }
 
+    /**
+     * @param {number} magnitude
+     * @returns {MeshAnimation[]}
+     *      Zero or more animations needed to produce the twinkle effect.
+     */
     beginTwinkle(magnitude) {
-        this.sky.addAnimation(new MeshAnimation({
-            duration: this.twinkleProperties.durationMillis / 2,
-            mesh: this.mesh,
-            animation: Animate.scale(1, magnitude),
-        }));
-        this.sky.addAnimation(new MeshAnimation({
-            startDelay: this.twinkleProperties.durationMillis / 2,
-            duration: this.twinkleProperties.durationMillis / 2,
-            mesh: this.mesh,
-            animation: Animate.scale(magnitude, 1)
-        }));
-
         this.isTwinkling = this.twinkleProperties.durationMillis / 1000;
+
+        return [
+            new MeshAnimation({
+                duration: this.twinkleProperties.durationMillis / 2,
+                mesh: this.mesh,
+                animation: Animate.scale(1, magnitude),
+            }),
+            new MeshAnimation({
+                startDelay: this.twinkleProperties.durationMillis / 2,
+                duration: this.twinkleProperties.durationMillis / 2,
+                mesh: this.mesh,
+                animation: Animate.scale(magnitude, 1)
+            })
+        ];
     }
 
-    getRelativeXY() {
-        let x = (this.x / this.limit + 1) / 2;
-        let y = (this.y / this.limit + 1) / 2;
+    /** Enlarges this star if it is over a bright area of the constellation image.
+     * 
+     * @param {number[][]} constellation
+     */
+    constellate(constellation, magnitude) {
+        const pixel = this.getConstellationImagePixelBrightness(constellation);
+        const scale = pixel * magnitude;
+
+        this.scale(1 + scale);
+    }
+
+    getConstellationImagePixelBrightness(constellation) {
+        let x = Math.floor(this.getRelativeX() * constellation.width);
+        let y = Math.floor(this.getRelativeY() * constellation.height);
 
         if(x < 0) x = 0;
         if(y < 0) y = 0;
-        if(x > 0.999999) x = 0.999999;
-        if(y > 0.999999) y = 0.999999;
+        if(x > constellation.width  - 1) x = constellation.width  - 1;
+        if(y > constellation.height - 1) y = constellation.height - 1;
 
-        return {x, y};
+        let constellationImagePixelBrightness = constellation[x][y];
+
+        return constellationImagePixelBrightness;
+    }
+
+    getRelativeX() {
+        return Interpolation.linear(this.x, -this.limit, this.limit);
+    }
+
+    getRelativeY() {
+        return Interpolation.linear(this.y, -this.limit, this.limit);
     }
 }
 

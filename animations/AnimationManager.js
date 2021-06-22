@@ -1,3 +1,4 @@
+import { ensureArray } from "../util/Array.js";
 import MeshAnimation from "./MeshAnimation.js";
 
 export default class AnimationManager {
@@ -8,10 +9,13 @@ export default class AnimationManager {
     whenDoneCallbacks = [];
 
     /**
-     * @param {MeshAnimation} animation 
+     * @param {MeshAnimation[]} animations 
      */
-    addAnimation(animation) {
-        this.animations.push(animation);
+    addAnimations(animations) {
+        animations = ensureArray(animations);
+
+        for(const animation of animations)
+            this.animations.push(animation);
     }
 
     update() {

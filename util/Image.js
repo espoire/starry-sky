@@ -13,7 +13,9 @@ export class NormalizedImageData extends Array {
         for(let i = 0; i < raw.length; i += 4) {
             const index = i/4;
             const x = index % image.width;
-            const y = Math.floor(index / image.width);
+
+            // For whatever reason, CanvasRenderingContext2D.getImageData sends us upside-down image info?
+            const y = image.height - 1 - Math.floor(index / image.width);
 
             const pixelData = new NormalizedPixelData(raw, i);
             this[x][y] = pixelData;

@@ -4,7 +4,7 @@ import Sky from "../starrysky/sky.js";
 import Stats from "../../node_modules/stats.js/src/Stats.js";
 import { loadImageData } from "../util/File.js";
 
-const imageData = await loadImageData("./resources/nudes.png");
+const imageData = await loadImageData("./resources/star.png");
 const twinkleMap = imageData.toBrightnessMap();
 
 export default class StarrySkyInitializer {
