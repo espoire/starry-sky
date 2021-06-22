@@ -4,7 +4,7 @@ import Sky from "../starrysky/sky.js";
 import Stats from "../../node_modules/stats.js/src/Stats.js";
 import { loadImageData } from "../util/File.js";
 
-const imageData = await loadImageData("./resources/star.png");
+const imageData = await loadImageData("./resources/nudes.png");
 const twinkleMap = imageData.toBrightnessMap();
 
 export default class StarrySkyInitializer {
@@ -20,6 +20,10 @@ export default class StarrySkyInitializer {
 
         const stats = createStats();
         manager.addSubmanager(stats);
+        
+        const controls = new THREE.OrbitControls( camera, renderer.domElement );
+        controls.target.set(0, 0, -1300);
+        manager.addSubmanager(controls);
 
         return manager;
     }

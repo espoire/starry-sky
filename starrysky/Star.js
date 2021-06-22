@@ -3,7 +3,7 @@ import { random, randomFromArray } from "../util/Util.js";
 import MeshAnimation from "../animations/MeshAnimation.js";
 import Animate from "../animations/Animate.js";
 
-const starGeometry = RegularPolygon.getGeometry(4);
+const starGeometry = RegularPolygon.getGeometry(4, true);
 const starMaterial = new THREE.MeshBasicMaterial({
     color: '#FFF',
     // wireframe: true

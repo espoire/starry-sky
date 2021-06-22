@@ -38,9 +38,9 @@ const twinkle = {
     durationMillis: 500,
 }
 
-const mapDelay = 3;
+const mapDelay = 10;
 const mapScale = 2;
-const fadeIn = 25;
+const fadeIn = 5;
 
 function getMapScale(time) {
     const progress = Interpolation.linear(time, mapDelay, mapDelay + fadeIn);
