@@ -1,7 +1,7 @@
 import Graphics from "./Graphics.js";
 import RenderingManager from "./RenderingManager.js";
-import Sky from "./starrysky/sky.js";
-import Stats from "../node_modules/stats.js/src/Stats.js";
+import Sky from "../starrysky/sky.js";
+import Stats from "../../node_modules/stats.js/src/Stats.js";
 
 export default class StarrySkyInitializer {
     static initialize() {

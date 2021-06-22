@@ -1,4 +1,4 @@
-import { currentTimeMillis } from "./util/Time.js";
+import { currentTimeMillis } from "../util/Time.js";
 
 export default class RenderingManager {
     subManagers = [];
