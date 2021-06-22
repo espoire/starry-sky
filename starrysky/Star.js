@@ -39,6 +39,10 @@ export default class Star {
         this.syncGraphicsToPosition();
     }
 
+    scale(scale) {
+        this.mesh.scale.set(scale, scale, scale);
+    }
+
     syncGraphicsToPosition() {
         this.mesh.position.set(this.x, this.y, -this.z);
     }
@@ -116,28 +120,40 @@ export default class Star {
      * @param {number} probability 
      *      The probability of starting a twinkle this frame.
      */
-    twinkle(probability, delta) {
+    twinkle(probability, magnitude, delta = 0) {
         this.isTwinkling -= delta;
 
         if(this.isTwinkling <= 0)
             if(Math.random() < probability)
-                this.beginTwinkle();
+                this.beginTwinkle(magnitude);
     }
 
-    beginTwinkle() {
+    beginTwinkle(magnitude) {
         this.sky.addAnimation(new MeshAnimation({
             duration: this.twinkleProperties.durationMillis / 2,
             mesh: this.mesh,
-            animation: Animate.scale(1, this.twinkleProperties.scaleMax),
+            animation: Animate.scale(1, magnitude),
         }));
         this.sky.addAnimation(new MeshAnimation({
             startDelay: this.twinkleProperties.durationMillis / 2,
             duration: this.twinkleProperties.durationMillis / 2,
             mesh: this.mesh,
-            animation: Animate.scale(this.twinkleProperties.scaleMax, 1)
+            animation: Animate.scale(magnitude, 1)
         }));
 
         this.isTwinkling = this.twinkleProperties.durationMillis / 1000;
+    }
+
+    getRelativeXY() {
+        let x = (this.x / this.limit + 1) / 2;
+        let y = (this.y / this.limit + 1) / 2;
+
+        if(x < 0) x = 0;
+        if(y < 0) y = 0;
+        if(x > 0.999999) x = 0.999999;
+        if(y > 0.999999) y = 0.999999;
+
+        return {x, y};
     }
 }
 

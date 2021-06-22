@@ -39,10 +39,11 @@ export default class RenderingManager {
         const renderer = this.renderer;
         const scene = this.scene;
         
-        let lastTime = currentTimeMillis() / 1000;
+        const startTime = currentTimeMillis() / 1000;
+        let lastTime = currentTimeMillis() / 1000 - startTime;
 
         function renderLoop() {
-            const time = currentTimeMillis() / 1000;
+            const time = currentTimeMillis() / 1000 - startTime;
             const delta = time - lastTime;
 
             requestAnimationFrame(renderLoop);

@@ -2,17 +2,19 @@ import { degreesToRadians } from "../util/Angle.js";
 import { random } from "../util/Util.js";
 import Star from "./Star.js";
 import AnimationManager from "../animations/AnimationManager.js";
+import Interpolation from "../math/Interpolation.js";
+import Easings from "../math/Easings.js";
 
 const camera = {
     fov: degreesToRadians(20),
     distance: 20
 };
 const starDistance = {
-    min: 100,
+    min: 500,
     max: 2000
 };
 const maxVolume = getMaxVolume();
-const count = 6000;
+const count = 13000;
 
 const starDrift = {
     x: 4,
@@ -33,12 +35,23 @@ const starWave = {
 const twinkle = {
     secondsPerOcurrence: 2000,
     scaleMax: 10,
-    durationMillis: 500
+    durationMillis: 500,
 }
 
+const mapDelay = 3;
+const mapScale = 2;
+const fadeIn = 25;
+
+function getMapScale(time) {
+    const progress = Interpolation.linear(time, mapDelay, mapDelay + fadeIn);
+    return 1 + mapScale * Easings.easeInOutCubic(progress);
+};
+
 export default class Sky extends AnimationManager {
-    constructor() {
+    constructor(twinkleMap) {
         super();
+
+        this.twinkleMap = twinkleMap;
         this.stars = this.generateStars();
     }
     
@@ -69,7 +82,15 @@ export default class Sky extends AnimationManager {
 
         for(const star of this.stars) {
             star.translate(deltaX, deltaY, deltaZ);
-            star.twinkle(twinkleProbability, delta);
+            star.twinkle(twinkleProbability, twinkle.scaleMax, delta);
+
+            const relativeXY = star.getRelativeXY();
+            const x = Math.floor(relativeXY.x * this.twinkleMap.width);
+            const y = Math.floor((1 - relativeXY.y) * this.twinkleMap.height);
+            
+            const scale = (getMapScale(time) - 1) * this.twinkleMap[x][y] + 1;
+
+            star.scale(scale);
         }
         
         super.update();
