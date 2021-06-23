@@ -4,7 +4,7 @@ export default class RegularPolygon {
     static getGeometry(sides, includeRearFace = false) {
         const index = buildIndex(sides, includeRearFace);
         const verts = buildVerts(sides);
-        
+
         const geometry = buildGeometry(index, verts);
 
         return geometry;
@@ -76,12 +76,12 @@ function buildIndex(sides, includeRearFace) {
 
         index.push(
             // Face
-            0, i, next
-        );
-          
-        if(includeRearFace) index.push(
-            // Rear
             0, next, i
+        );
+
+        if (includeRearFace) index.push(
+            // Rear
+            0, i, next
         );
     }
 

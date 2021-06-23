@@ -7,7 +7,7 @@ export default class MeshAnimation {
      * @param {number} config.startDelay in millis
      * @param {number} config.duration in millis
      * @param {THREE.Mesh} config.mesh
-     * @param {Animation | Animation[]} config.animations
+     * @param {Animation | Animation[]} config.effect
      */
     constructor(config) {
         applyDefaultsTo(config);
@@ -19,7 +19,7 @@ export default class MeshAnimation {
         this.endTime = this.startTime + this.duration;
 
         this.mesh = config.mesh;
-        this.animations = ensureArray(config.animation);
+        this.effects = ensureArray(config.effect);
 
         this.lastUpdated = time;
         this.isStarted = false;
@@ -43,23 +43,23 @@ export default class MeshAnimation {
     }
 
     start() {
-        for(const animation of this.animations)
-            if(animation.start)
-                animation.start(this.mesh);
+        for(const effect of this.effects)
+            if(effect.start)
+                effect.start(this.mesh);
         
         this.isStarted = true;
     }
 
     step(delta, progress) {
-        for(const animation of this.animations)
-            if(animation.step)
-                animation.step(this.mesh, delta, progress);
+        for(const effect of this.effects)
+            if(effect.step)
+                effect.step(this.mesh, delta, progress);
     }
 
     end() {
-        for(const animation of this.animations)
-            if(animation.end)
-                animation.end(this.mesh);
+        for(const effect of this.effects)
+            if(effect.end)
+                effect.end(this.mesh);
         
         this.isEnded = true;
     }
@@ -108,7 +108,8 @@ export default class MeshAnimation {
 
 
 const configDefaults = {
-    startDelay: 0
+    startDelay: 0,
+    duration: 0
 }
 
 function applyDefaultsTo(config) {

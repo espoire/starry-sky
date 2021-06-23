@@ -1,48 +1,55 @@
 import RegularPolygon from "../geometry/RegularPolygon.js";
 import { random, randomFromArray } from "../util/Util.js";
 import MeshAnimation from "../animations/MeshAnimation.js";
-import Animate from "../animations/Animate.js";
+import AnimationEffect from "../animations/Animate.js";
 import Interpolation from "../math/Interpolation.js";
 
 const starGeometry = RegularPolygon.getGeometry(4);
 const starMaterial = new THREE.MeshBasicMaterial({ color: '#FFF' });
 
 export default class Star {
-    // TODO convert to config object
-    constructor(x, y, z, camera, starDistanceLimits, twinkleProperties) {
-        this.camera = camera;
-        this.starDistanceLimits = starDistanceLimits;
-        this.twinkleProperties = twinkleProperties;
-
+    /**
+     * @param {object} config
+     * @param {object} config.position
+     * @param {number} config.position.x
+     * @param {number} config.position.y
+     * @param {number} config.position.z
+     * @param {object} config.frustum
+     * @param {number} config.frustum.minZ
+     * @param {number} config.frustum.maxZ
+     * @param {number} config.frustum.angle
+     */
+    constructor(config) {
         this.mesh = generateMesh();
-
-        this.setPosition(x, y, z);
-        
-        this.isTwinkling = 0;
+        this.frustum = config.frustum;
+        this.setPosition(config.position);
     }
 
     getLimit() {
-        const camera = this.camera;
-        const z = this.z;
-
-        return Math.sin(camera.fov / 2) * (camera.distance + z)
+        return Math.sin(this.frustum.angle / 2) * (this.frustum.minZ + this.z);
     }
 
-    setPosition(x, y, z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    /**
+     * @param {object} position 
+     * @param {number} position.x
+     * @param {number} position.y
+     * @param {number} position.z
+     */
+    setPosition(position) {
+        this.x = position.x;
+        this.y = position.y;
+        this.z = position.z;
         this.limit = this.getLimit();
         
-        this.syncGraphicsToPosition();
+        this.updateMeshPosition();
     }
 
     scale(scale) {
         this.mesh.scale.set(scale, scale, scale);
     }
 
-    syncGraphicsToPosition() {
-        this.mesh.position.set(this.x, this.y, -this.z);
+    updateMeshPosition() {
+        this.mesh.position.set(this.x, this.y, this.frustum.minZ + this.z);
     }
 
     translate(deltaX, deltaY, deltaZ) {
@@ -62,7 +69,7 @@ export default class Star {
             this.wrapZ();
         }
 
-        this.syncGraphicsToPosition();
+        this.updateMeshPosition();
     }
 
     wrapX() {
@@ -86,18 +93,18 @@ export default class Star {
         const y = Math.abs(this.y);
         const z =          this.z;
 
-        if(x > this.limit || y > this.limit || z < this.starDistanceLimits.min) {
+        if(x > this.limit || y > this.limit || z < this.frustum.minZ) {
             // Note: this code doesn't work right.
             // Not fixing now because it's not in use anyway.
             console.log("Wrapped front to back.");
 
-            this.z += this.starDistanceLimits.max - this.starDistanceLimits.min;
+            this.z += this.frustum.maxZ - this.frustum.minZ;
             this.limit = this.getLimit();
 
             this.x = random(-this.limit, this.limit);
             this.y = random(-this.limit, this.limit);
-        } else if(z > this.starDistanceLimits.max) {
-            this.z -= this.starDistanceLimits.max - this.starDistanceLimits.min;
+        } else if(z > this.frustum.maxZ) {
+            this.z -= this.frustum.maxZ - this.frustum.minZ;
             this.limit = this.getLimit();
 
             if(Math.random() < 0.5) {
@@ -113,36 +120,49 @@ export default class Star {
     /**
      * @param {number} probability 
      *      The probability of starting a twinkle this frame.
+     * @param {number} magnitude
+     *      The scale multiplier at the height of the twinkle effect.
+     * @param {number} millis
+     *      The duration of the twinkle effect, in milliseconds.
      * @returns {MeshAnimation[]}
      *      Any animations to display.
      */
-    twinkle(probability, magnitude, delta = 0) {
-        this.isTwinkling -= delta;
-
-        if(this.isTwinkling <= 0)
-            if(Math.random() < probability)
-                return this.beginTwinkle(magnitude);
+    maybeTwinkle(probability, magnitude, millis) {
+        if(Math.random() < probability)
+            return this.twinkle(magnitude, millis);
     }
 
     /**
      * @param {number} magnitude
+     *      The scale multiplier at the height of the twinkle effect.
+     * @param {number} millis
+     *      The duration of the twinkle effect, in milliseconds.
      * @returns {MeshAnimation[]}
      *      Zero or more animations needed to produce the twinkle effect.
      */
-    beginTwinkle(magnitude) {
-        this.isTwinkling = this.twinkleProperties.durationMillis / 1000;
+    twinkle(magnitude, millis) {
+        if(this.isTwinkling) return;
+        this.isTwinkling = true;
+
+        const star = this;
 
         return [
             new MeshAnimation({
-                duration: this.twinkleProperties.durationMillis / 2,
+                duration: millis / 2,
                 mesh: this.mesh,
-                animation: Animate.scale(1, magnitude),
+                effect: AnimationEffect.scale(1, magnitude),
             }),
             new MeshAnimation({
-                startDelay: this.twinkleProperties.durationMillis / 2,
-                duration: this.twinkleProperties.durationMillis / 2,
+                startDelay: millis / 2,
+                duration: millis / 2,
                 mesh: this.mesh,
-                animation: Animate.scale(magnitude, 1)
+                effect: AnimationEffect.scale(magnitude, 1)
+            }),
+            new MeshAnimation({
+                startDelay: millis,
+                effect: AnimationEffect.callbackWhenComplete(function () {
+                    star.isTwinkling = false;
+                })
             })
         ];
     }
@@ -167,9 +187,7 @@ export default class Star {
         if(x > constellation.width  - 1) x = constellation.width  - 1;
         if(y > constellation.height - 1) y = constellation.height - 1;
 
-        let constellationImagePixelBrightness = constellation[x][y];
-
-        return constellationImagePixelBrightness;
+        return constellation[x][y];
     }
 
     getRelativeX() {

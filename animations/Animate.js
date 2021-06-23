@@ -69,4 +69,10 @@ export default class Animate {
             }
         };
     }
+
+    static callbackWhenComplete(callback) {
+        return {
+            end: callback
+        };
+    }
 }

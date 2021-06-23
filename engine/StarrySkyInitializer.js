@@ -22,7 +22,7 @@ export default class StarrySkyInitializer {
         manager.addSubmanager(stats);
         
         const controls = new THREE.OrbitControls( camera, renderer.domElement );
-        controls.target.set(0, 0, -1300);
+        controls.target.set(0, 0, 1300);
         manager.addSubmanager(controls);
 
         return manager;

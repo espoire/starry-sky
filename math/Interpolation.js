@@ -6,6 +6,8 @@ export default class Interpolation {
      * @returns {number} in the range [0 .. 1]
      */
     static linear(x, min = 0, max = 1) {
+        if(min == max) throw new Error("Cannot interpolate over a zero-span.");
+
         if(x <= min) return 0;
         if(x >= max) return 1;
 

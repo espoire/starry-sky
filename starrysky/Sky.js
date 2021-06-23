@@ -8,11 +8,10 @@ import Easings from "../math/Easings.js";
 // TODO convert settings to config object
 
 const camera = {
-    fov: degreesToRadians(20),
-    distance: 20
+    fov: degreesToRadians(20)
 };
 const starDistance = {
-    min: 500,
+    min: 300,
     max: 2000
 };
 const maxVolume = getMaxVolume();
@@ -73,7 +72,7 @@ export default class Sky extends AnimationManager {
         for(const star of this.stars) {
             star.translate(deltaX, deltaY, deltaZ);
 
-            const twinkleAnimations = star.twinkle(twinkleProbability, twinkle.scaleMax, delta);
+            const twinkleAnimations = star.maybeTwinkle(twinkleProbability, twinkle.scaleMax, twinkle.durationMillis);
             this.addAnimations(twinkleAnimations);
 
             star.constellate(this.constellation, mapScale);
@@ -113,11 +112,28 @@ function generateStar() {
     const v = random(0, maxVolume);
     const z = getDistanceForVolume(v);
     
-    const xyLimit = Math.sin(camera.fov) * (camera.distance + z);
+    const xyLimit = (z + starDistance.min) * Math.sin(camera.fov / 2);
     const x = random(-xyLimit, xyLimit);
     const y = random(-xyLimit, xyLimit);
 
-    const star = new Star(x, y, z, camera, starDistance, twinkle);
+
+    if(!x || !y || !z) {
+        debugger;
+        throw new Error();
+    }
+
+    const star = new Star({
+        position: {
+            x: x,
+            y: y,
+            z: z
+        },
+        frustum: {
+            minZ: starDistance.min,
+            maxZ: starDistance.max,
+            angle: camera.fov
+        }
+    });
 
     return star;
 }
@@ -136,14 +152,9 @@ function getVolumeBetweenNearPlaneAndDistance(d) {
  * @returns {number}
  */
 function getVolumeFromCameraForDistance(d) {
-    return                       1/3     * Math.pow(d, 3) +
-                     camera.distance     * Math.pow(d, 2) +
-            Math.pow(camera.distance, 2) *          d;
+    return Math.pow(d, 3) / 3;
 }
 
 function getDistanceForVolume(v) {
-    // t = "trueDistanceToNearPlane"
-    const t = camera.distance + starDistance.min;
-
-    return Math.cbrt(3 * v + Math.pow(t, 3)) - t + starDistance.min;
+    return Math.cbrt(3 * v + Math.pow(starDistance.min, 3));
 }
