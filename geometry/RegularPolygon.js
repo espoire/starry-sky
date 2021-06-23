@@ -76,12 +76,12 @@ function buildIndex(sides, includeRearFace) {
 
         index.push(
             // Face
-            0, next, i
+            0, i, next
         );
 
         if (includeRearFace) index.push(
             // Rear
-            0, i, next
+            0, next, i
         );
     }
 

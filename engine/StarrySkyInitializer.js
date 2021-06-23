@@ -15,14 +15,39 @@ export default class StarrySkyInitializer {
 
         const manager = new RenderingManager(scene, camera, renderer);
 
-        const sky = new Sky(twinkleMap);
+        const sky = new Sky({
+            stars: 6000,
+            frustum: {
+                near: 200,
+                far: 2000,
+                angle: 20
+            },
+            effects: {
+                motion: { x: 4, y: 0, z: 0 },
+                wave: {
+                    amplitude: { x: 0, y: 10, z: 0 },
+                    period: 15
+                },
+                twinkle: {
+                    rate: 3,
+                    magnitude: 10,
+                    duration: 0.5,
+                },
+                constellation: {
+                    delay: 2,
+                    fadeIn: 4,
+                    magnitude: 2,
+                    image: twinkleMap
+                }
+            }
+        });
         manager.addSubmanager(sky);
 
         const stats = createStats();
         manager.addSubmanager(stats);
         
         const controls = new THREE.OrbitControls( camera, renderer.domElement );
-        controls.target.set(0, 0, 1300);
+        controls.target.set(0, 0, -1300);
         manager.addSubmanager(controls);
 
         return manager;

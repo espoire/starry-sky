@@ -12,13 +12,14 @@ export default class RenderingManager {
     /**
      * @param {object} sub
      * @param {function} sub.update
-     * @param {function} sub.setRenderingManager
+     * @param {function} sub.getAllMeshes
      */
     addSubmanager(sub) {
         this.subManagers.push(sub);
 
-        if(sub.setRenderingManager)
-            sub.setRenderingManager(this);
+        if(sub.getAllMeshes) sub.getAllMeshes().forEach(mesh => {
+            this.scene.add(mesh);
+        });
     }
 
     /**
