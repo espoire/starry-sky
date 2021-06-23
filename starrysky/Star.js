@@ -53,19 +53,22 @@ export default class Star {
         this.mesh.position.set(this.x, this.y, -z);
     }
 
-    translate(deltaX, deltaY, deltaZ) {
-        if(deltaX != 0) {
-            this.x += deltaX;
+    /**
+     * @param {Vector3D} vector 
+     */
+    translate(vector) {
+        if(vector.x != 0) {
+            this.x += vector.x;
             this.wrapX();
         }
 
-        if(deltaY != 0) {
-            this.y += deltaY;
+        if(vector.y != 0) {
+            this.y += vector.y;
             this.wrapY();
         }
 
-        if(deltaZ != 0) {
-            this.z += deltaZ;
+        if(vector.z != 0) {
+            this.z += vector.z;
             this.limit = this.getLimit();
             this.wrapZ();
         }

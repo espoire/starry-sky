@@ -4,6 +4,7 @@ import AnimationManager from "../animations/AnimationManager.js";
 import Interpolation from "../math/Interpolation.js";
 import Easings from "../math/Easings.js";
 import { degreesToRadians } from "../util/Angle.js";
+import { Vector3D } from "../math/Vector.js";
 
 export default class Sky extends AnimationManager {
     /**
@@ -82,13 +83,13 @@ export default class Sky extends AnimationManager {
      *      The time elapsed since the last update in seconds.
      */
     update(time, delta) {
-        const { deltaX, deltaY, deltaZ } = this.getStarsTranslationVector(time, delta);
+        const vector = this.getTranslationVector(time, delta);
 
         const probability = this.getTwinkleProbabilityPerStar(delta);
         const magnitude = this.getConstellationMagnitude(time);
 
         for (const star of this.stars) {
-            star.translate(deltaX, deltaY, deltaZ);
+            star.translate(vector);
 
             if (this.effects.twinkle) {
                 const animations = star.maybeTwinkle(probability, this.effects.twinkle.magnitude, this.effects.twinkle.duration);
@@ -103,28 +104,39 @@ export default class Sky extends AnimationManager {
         super.update();
     }
 
-    getStarsTranslationVector(time, delta) {
-        let deltaX = 0;  // TODO convert to addable Vector3Ds
-        let deltaY = 0;
-        let deltaZ = 0;
-    
-        if(this.effects.wave) {   
-            const prevPhase = Math.sin(2 * Math.PI * (time - delta) / this.effects.wave.period);
-            const wavePhase = Math.sin(2 * Math.PI *  time          / this.effects.wave.period);
-            const deltaPhase = wavePhase - prevPhase;
-            
-            deltaX += this.effects.wave.amplitude.x * deltaPhase;
-            deltaY += this.effects.wave.amplitude.y * deltaPhase;
-            deltaZ += this.effects.wave.amplitude.z * deltaPhase;
-        }
-            
-        if (this.effects.motion) {
-            deltaX += this.effects.motion.x * delta;
-            deltaY += this.effects.motion.y * delta;
-            deltaZ += this.effects.motion.z * delta;
-        }
-    
-        return { deltaX, deltaY, deltaZ };
+    getTranslationVector(time, delta) {
+        let translation = Vector3D.zero;
+
+        translation = translation.add(this.getWaveVector  (time, delta));
+        translation = translation.add(this.getMotionVector(      delta));
+
+        return translation;
+    }
+
+    getMotionVector(delta) {
+        if (!this.effects.motion)
+            return Vector3D.zero;
+
+        return new Vector3D(
+            this.effects.motion.x * delta,
+            this.effects.motion.y * delta,
+            this.effects.motion.z * delta
+        );
+    }
+
+    getWaveVector(time, delta) {
+        if (!this.effects.wave)
+            return Vector3D.zero;
+
+        const prevPhase = Math.sin(2 * Math.PI * (time - delta) / this.effects.wave.period);
+        const wavePhase = Math.sin(2 * Math.PI * time / this.effects.wave.period);
+        const deltaPhase = wavePhase - prevPhase;
+
+        return new Vector3D(
+            this.effects.wave.amplitude.x * deltaPhase,
+            this.effects.wave.amplitude.y * deltaPhase,
+            this.effects.wave.amplitude.z * deltaPhase
+        );
     }
 
     getTwinkleProbabilityPerStar(delta) {
