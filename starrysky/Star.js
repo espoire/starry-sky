@@ -178,10 +178,7 @@ export default class Star {
      */
     constellate(constellation, magnitude) {
         const pixel = this.getConstellationImagePixelBrightness(constellation);
-        const scale = pixel * magnitude;
-
-        this.scale(1 + scale);
-        // TODO change to addative "apparent magnitude" (astronomy term), not multiplicative
+        this.addMagnitude(pixel * magnitude);
     }
 
     // TODO build pixel interpolation
@@ -203,6 +200,22 @@ export default class Star {
 
     getRelativeY() {
         return Interpolation.linear(this.y, -this.limit, this.limit);
+    }
+
+    addMagnitude(magnitude) {
+        const baseMagnitude = this.getMagnitude();
+        const scale = this.getScaleForMagnitude(baseMagnitude + magnitude);
+        this.scale(scale);
+    }
+
+    getMagnitude(scale = 1) {
+        const z = this.frustum.near + this.z;
+        return 1000 / z * scale; // Apparent magnitude "1" arbitrarily defined to be at distance 1000.
+    }
+
+    getScaleForMagnitude(magnitude) {
+        const z = this.frustum.near + this.z;
+        return magnitude * z / 1000;
     }
 }
 

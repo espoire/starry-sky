@@ -18,9 +18,9 @@ export default class StarrySkyInitializer {
         const sky = new Sky({
             stars: 6000,
             frustum: {
-                near: 200,
+                near: 50,
                 far: 2000,
-                angle: 20
+                angle: 45
             },
             effects: {
                 motion: { x: 4, y: 0, z: 0 },

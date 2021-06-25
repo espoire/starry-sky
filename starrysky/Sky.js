@@ -172,7 +172,7 @@ function getConeVolume(height) {
 }
 
 function getFrustumHeight(frustumNearPlane, volume) {
-    return getConeHeight(volume + Math.pow(frustumNearPlane, 3) / 3);
+    return getConeHeight(volume + getConeVolume(frustumNearPlane));
 }
 
 function getConeHeight(volume) {
