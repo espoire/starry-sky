@@ -1,0 +1,16 @@
+constellations
+    Center, not stretch
+    Set scale
+    Set position / offset
+
+frustum
+    Support non-square area
+    Auto-generate based on camera and rendering canvas area
+
+sky
+    Auto-resize on page resize
+
+sky / larger HTML page interaction
+    Embeddable block element in HTML page
+    React to scrolling
+    embed constellations in HTML page, sky displays them in the area of their block elements' overlap
