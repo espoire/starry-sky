@@ -20,7 +20,7 @@ export default class StarrySkyInitializer {
             frustum: {
                 near: 50,
                 far: 2000,
-                angle: 45
+                angle: 30
             },
             effects: {
                 motion: { x: 4, y: 0, z: 0 },

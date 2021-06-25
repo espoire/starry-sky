@@ -3,6 +3,7 @@ import { random, randomFromArray } from "../util/Util.js";
 import MeshAnimation from "../animations/MeshAnimation.js";
 import AnimationEffect from "../animations/Animate.js";
 import Interpolation from "../math/Interpolation.js";
+import { Map2D } from "../util/Image.js";
 
 const starGeometry = RegularPolygon.getGeometry(4);
 const starMaterial = new THREE.MeshBasicMaterial({ color: '#FFF' });
@@ -174,24 +175,12 @@ export default class Star {
 
     /** Enlarges this star if it is over a bright area of the constellation image.
      * 
-     * @param {number[][]} constellation
+     * @param {Map2D} constellation
+     * @param {number} magnitude
      */
     constellate(constellation, magnitude) {
-        const pixel = this.getConstellationImagePixelBrightness(constellation);
+        const pixel = constellation.pixelInterpolate(this.getRelativeX(), this.getRelativeY());
         this.addMagnitude(pixel * magnitude);
-    }
-
-    // TODO build pixel interpolation
-    getConstellationImagePixelBrightness(constellation) {
-        let x = Math.floor(this.getRelativeX() * constellation.width);
-        let y = Math.floor(this.getRelativeY() * constellation.height);
-
-        if(x < 0) x = 0;
-        if(y < 0) y = 0;
-        if(x > constellation.width  - 1) x = constellation.width  - 1;
-        if(y > constellation.height - 1) y = constellation.height - 1;
-
-        return constellation[x][y];
     }
 
     getRelativeX() {
@@ -202,6 +191,9 @@ export default class Star {
         return Interpolation.linear(this.y, -this.limit, this.limit);
     }
 
+    /**
+     * @param {number} magnitude 
+     */
     addMagnitude(magnitude) {
         const baseMagnitude = this.getMagnitude();
         const scale = this.getScaleForMagnitude(baseMagnitude + magnitude);

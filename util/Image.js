@@ -1,13 +1,46 @@
-export class NormalizedImageData extends Array {
-    constructor(image) {
-        super(image.width);
-
-        this.width = image.width;
-        this.height = image.height;
+export class Map2D extends Array {
+    constructor(width, height) {
+        super(width);
         
-        for(let x = 0; x < this.width; x++) {
-            this[x] = [];
+        for(let x = 0; x < width; x++) {
+            this[x] = new Array(height);
         }
+
+        this.width = width;
+        this.height = height;
+    }
+
+    /**
+     * @param {number} xPortion
+     *      The x position in this map, in the range [0 .. 1].
+     * @param {number} yPortion
+     *      The y position in this map, in the range [0 .. 1].
+     * @returns {number}
+     *      The weighted average of the 4 elements surrounding
+     *      the specified position.
+     */
+    pixelInterpolate(xPortion, yPortion) {
+        const x = xPortion * (this.width  - 1);
+        const y = yPortion * (this.height - 1);
+    
+        const left   = Math.floor(x);
+        const right  = Math.ceil (x);
+        const bottom = Math.floor(y);
+        const top    = Math.ceil (y);
+    
+        const  rightWeight = x - left;
+        const   leftWeight = 1 - rightWeight;
+        const    topWeight = y - bottom;
+        const bottomWeight = 1 - topWeight;
+        
+        return topWeight * (rightWeight * this[right][top   ] + leftWeight * this[left][top   ]) +
+            bottomWeight * (rightWeight * this[right][bottom] + leftWeight * this[left][bottom]);
+    }
+}
+
+export class NormalizedImageData extends Map2D {
+    constructor(image) {
+        super(image.width, image.height);
         
         const raw = getRawData(image);
         for(let i = 0; i < raw.length; i += 4) {
@@ -23,19 +56,12 @@ export class NormalizedImageData extends Array {
     }
 
     toPropertyMap(property) {
-        const ret = [];
+        const ret = new Map2D(this.width, this.height);
 
-        ret.width = this.width;
-        ret.height = this.height;
-
-        for(let x = 0; x < this.width; x++) {
-            ret[x] = [];
-
-            for(let y = 0; y < this.height; y++) {
+        for(let x = 0; x < this.width; x++)
+            for(let y = 0; y < this.height; y++)
                 ret[x][y] = this[x][y][property];
-            }
-        }
-
+        
         return ret;
     }
 
