@@ -1,3 +1,4 @@
+import { BufferGeometry, Float32BufferAttribute } from "three";
 import { unroll } from "../util/Array.js";
 
 export default class RegularPolygon {
@@ -14,13 +15,13 @@ export default class RegularPolygon {
 /**
  * @param {number[]} index 
  * @param {number[]} verts 
- * @returns {THREE.BufferGeometry}
+ * @returns {BufferGeometry}
  */
 function buildGeometry(index, verts) {
-    const geometry = new THREE.BufferGeometry();
+    const geometry = new BufferGeometry();
 
     geometry.setIndex(index);
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+    geometry.setAttribute('position', new Float32BufferAttribute(verts, 3));
     geometry.computeVertexNormals();
 
     return geometry;

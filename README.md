@@ -1,6 +1,6 @@
 # starry-sky
 
-Procedurally generates star fields. Renders in-browser with THREE.js.
+Procedurally generates star fields. Renders in-browser with THREE js.
 
 # Examples
 

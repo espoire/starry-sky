@@ -1,3 +1,4 @@
+import { Mesh } from "three";
 import { ensureArray } from "../util/Array.js";
 import { currentTimeMillis } from "../util/Time.js";
 
@@ -6,7 +7,7 @@ export default class MeshAnimation {
      * @param {object} config
      * @param {number} config.startDelay in millis
      * @param {number} config.duration in millis
-     * @param {THREE.Mesh} config.mesh
+     * @param {Mesh} config.mesh
      * @param {Animation | Animation[]} config.effect
      */
     constructor(config) {

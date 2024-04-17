@@ -4,9 +4,10 @@ import MeshAnimation from "../animations/MeshAnimation.js";
 import AnimationEffect from "../animations/Animate.js";
 import Interpolation from "../math/Interpolation.js";
 import { Map2D } from "../util/Image.js";
+import { Mesh, MeshBasicMaterial } from "three";
 
 const starGeometry = RegularPolygon.getGeometry(4);
-const starMaterial = new THREE.MeshBasicMaterial({ color: '#FFF' });
+const starMaterial = new MeshBasicMaterial({ color: '#FFF' });
 
 export default class Star {
     /**
@@ -212,7 +213,7 @@ export default class Star {
 }
 
 function generateMesh() {
-    return new THREE.Mesh(
+    return new Mesh(
         starGeometry,
         starMaterial
     );
