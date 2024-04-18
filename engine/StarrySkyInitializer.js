@@ -1,6 +1,6 @@
 import Graphics from "./Graphics.js";
 import RenderingManager from "./RenderingManager.js";
-import Sky from "../starrysky/sky.js";
+import Sky from "../geometry/Sky.js";
 import { loadImageData } from "../util/File.js";
 import { OrbitControls } from "../lib/OrbitControls.js";
 

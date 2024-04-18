@@ -1,4 +1,4 @@
-import RegularPolygon from "../geometry/RegularPolygon.js";
+import RegularPolygon from "./RegularPolygon.js";
 import { random, randomFromArray } from "../util/Util.js";
 import MeshAnimation from "../animations/MeshAnimation.js";
 import AnimationEffect from "../animations/Animate.js";
